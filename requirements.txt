@@ -1,6 +1,1 @@
-requests
-bs4
-lxml
-selenium
-pandas
-schedule
+requests==2.31.0

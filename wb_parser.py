@@ -1,101 +1,76 @@
 import requests
-import time
 import re
 import json
-import pandas as pd
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 
 
-def get_product_id():
-    excel_data = pd.read_excel("Книга111.xlsx", header=None)
-    id_list = excel_data[0].tolist()
-    return id_list
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
+}
 
+class WBReview:
+    def __init__(self, string: str):
+        self.sku = self.get_sku(string=string)
+        self.root_id = self.get_root_id(sku=self.sku)
 
-def get_product_info(url:str, id:str):
-    pattern = '(?<=catalog\/).+(?=\/)'
-    product_id = re.search(pattern, url)[0]
-
-    # get product info
-    response = requests.get(f'https://card.wb.ru/cards/detail?nm={product_id}')
-    result = []
-    result.append({
-        'name': response.json()['data']['products'][0]['brand'] + ' / ' + response.json()['data']['products'][0]['name'], # название товара
-        'id': response.json()['data']['products'][0]['id'], # SKU товара
-        'reviewRating': response.json()['data']['products'][0]['reviewRating'] # Текущий рейтинг товара
-    })
-
-    # set up webdriver and get feedbacks
-    imt_id = response.json()['data']['products'][0]['root']
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    driver = webdriver.Chrome(options=options)
-    driver.maximize_window()
-
-    try:
-        driver.get(url=f'https://www.wildberries.ru/catalog/{product_id}/feedbacks?imtId={imt_id}')
-        last_height = driver.execute_script("return document.body.scrollHeight")
-
-        while True:
-            # Scroll down
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            # Pause while the page is loading
-            time.sleep(2)
-            # Calculate the new scroll height and compare with the highest scroll height
-            new_height = driver.execute_script("return document.body.scrollHeight") 
-            if new_height == last_height:
-                print("Scroll completed")
-                driver.find_elements(By.CLASS_NAME, "comments__list")
-                with open("source-page.html", "w", encoding="utf-8") as file:
-                    file.write(driver.page_source)
-                break 
+    @staticmethod
+    def get_sku(string: str) -> str:
+        """ Get sku from string """
+        if "wildberries.ru/catalog/" in string:
+            pattern = r"\d{7,15}"
+            sku = re.findall(pattern=pattern, string=string)
+            if sku:
+                return sku[0]
             else:
-                last_height = new_height
-                print("New content has arrived, keep scrolling")
+                raise Exception(f"Can't get sku from string: {string}")
+
+        return string
+
+
+    def get_root_id(self, sku: str):
+        """ Get root_id from sku """
+        response = requests.get(
+            url=f"https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-59202&spp=30&ab_testing=false&nm={sku}",
+            headers=HEADERS
+        )
+        if response.status_code != 200:
+            raise Exception(f"Can't get root_id from sku: {sku}")
+        root_id = response.json()["data"]["products"][0]["root"]
+        item_name = response.json()["data"]["products"][0]["name"]
+        print(item_name)
+        return root_id
+
+
+    def get_review(self) -> json:
+        """ Get reviews from server 1 or 2 """
+        try:
+            response = requests.get(
+                url=f"https://feedbacks1.wb.ru/feedbacks/v1/{self.root_id}",
+                headers=HEADERS,
+            )
+            if response.status_code == 200:
+                if not response.json()["feedbacks"]:
+                    raise Exception("Server 1 is not suitable")
+                return response.json()
+        except Exception as e:
+            response = requests.get(
+                url=f"https://feedbacks2.wb.ru/feedbacks/v1/{self.root_id}",
+                headers=HEADERS,
+            )
+            if response.status_code == 200:
+                return response.json()
+
+    def parse(self):
+        json_feedback = self.get_review()
         
-            time.sleep(3)
+        feedbacks = [feedback.get("text") for feedback in json_feedback["feedbacks"]]
+        # feedback_ratings = [feedback.get("productValuation") for feedback in json_feedback["feedbacks"]]
+        # average_rating = json_feedback["valuation"]
+        # feedback_count = json_feedback["feedbackCount"]
+        # valuation_distributio_percents = json_feedback["valuationDistributionPercent"]
 
-
-        with open("source-page.html", "r", encoding="utf-8") as file:
-            src = file.read()
-
-        soup = BeautifulSoup(src, "lxml")
-        comments = soup.find_all(class_='feedback__text')
-        authors = soup.find_all(class_='feedback__header')
-        rating = soup.find_all(class_='feedback__rating') # class='feedback__rating stars-line star4'
-
-        for i in range(0, len(comments)):
-            stars_str = rating[i].attrs.get('class')[2] # 'feedback__rating stars-line star4' -> 'star4'
-            stars_num = int(stars_str.split("star")[1]) # 'star4' -> 4
-            if stars_num <= 4:
-                result.append({
-                    'feedback': comments[i].text, # текст отзыва
-                    'rating': stars_num, # столько-то звезд (от 4х до 1ой)
-                })
-
-    except Exception as _ex:
-        print(_ex)
-        
-    finally:
-        driver.close()
-        driver.quit()
-    
-    save_to_json(result=result, id=id)
-
-
-def save_to_json(result:list, id:str):
-    with open(f"{id}_wb_data.json", "w", encoding="utf-8") as file:
-        json.dump(result, file, indent=4, ensure_ascii=False)
-
-
-def main():
-    ids = get_product_id()
-    for id in ids:
-        url = 'https://www.wildberries.ru/catalog/' + str(id) + '/detail.aspx'
-        get_product_info(url=url, id=id)
-    
+        return feedbacks
 
 if __name__ == "__main__":
-    main()
+    print(WBReview("https://www.wildberries.ru/catalog/190597734/detail.aspx").parse())
+    # print(WBReview("190597734").sku)
+    # print(WBReview("https://www.wildberries.ru/catalog/1/detail.aspx").sku)
