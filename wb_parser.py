@@ -1,6 +1,13 @@
 import requests
 import re
 import json
+from chat_gpt import ask
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 HEADERS = {
@@ -61,16 +68,22 @@ class WBReview:
 
     def parse(self):
         json_feedback = self.get_review()
-        
+
         feedbacks = [feedback.get("text") for feedback in json_feedback["feedbacks"]]
-        # feedback_ratings = [feedback.get("productValuation") for feedback in json_feedback["feedbacks"]]
-        # average_rating = json_feedback["valuation"]
-        # feedback_count = json_feedback["feedbackCount"]
-        # valuation_distributio_percents = json_feedback["valuationDistributionPercent"]
+        # Чтобы избежать 400й ошибки из-за превышения maximum context lenghth
+        if len(feedbacks) > 80:
+            feedbacks = feedbacks[:80]
+            
+        feedback_ratings = [feedback.get("productValuation") for feedback in json_feedback["feedbacks"]]
+        average_rating = json_feedback["valuation"]
+        feedback_count = json_feedback["feedbackCount"]
+        valuation_distributio_percents = json_feedback["valuationDistributionPercent"]
 
         return feedbacks
 
 if __name__ == "__main__":
-    print(WBReview("https://www.wildberries.ru/catalog/190597734/detail.aspx").parse())
+    feedbacks = WBReview("https://www.wildberries.ru/catalog/190597734/detail.aspx").parse()
+    answer = ask(feedbacks=feedbacks, api_key=OPENAI_API_KEY)
+    print(answer)
     # print(WBReview("190597734").sku)
     # print(WBReview("https://www.wildberries.ru/catalog/1/detail.aspx").sku)
