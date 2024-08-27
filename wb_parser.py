@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise Exception("OPENAI_API_KEY not found")
 
 
 HEADERS = {
@@ -67,17 +69,17 @@ class WBReview:
                 return response.json()
 
     def parse(self):
-        json_feedback = self.get_review()
-
-        feedbacks = [feedback.get("text") for feedback in json_feedback["feedbacks"]]
-        # Чтобы избежать 400й ошибки из-за превышения maximum context lenghth
+        json_feedbacks = self.get_review()
+        # Added sku filter to ("Этот вариант товара")
+        feedbacks = [feedback.get("text") for feedback in json_feedbacks["feedbacks"] if str(feedback.get("nmId")) == self.sku]
+        # To avoid 400 error due to exceeding maximum context length
         if len(feedbacks) > 80:
             feedbacks = feedbacks[:80]
-            
-        feedback_ratings = [feedback.get("productValuation") for feedback in json_feedback["feedbacks"]]
-        average_rating = json_feedback["valuation"]
-        feedback_count = json_feedback["feedbackCount"]
-        valuation_distributio_percents = json_feedback["valuationDistributionPercent"]
+        # TO DO
+        feedback_ratings = [feedback.get("productValuation") for feedback in json_feedbacks["feedbacks"]]
+        average_rating = json_feedbacks["valuation"]
+        feedback_count = json_feedbacks["feedbackCount"]
+        valuation_distribution_percents = json_feedbacks["valuationDistributionPercent"]
 
         return feedbacks
 
