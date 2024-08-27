@@ -22,27 +22,29 @@ def main(page: ft.Page):
 
     # Input validation function
     def check_input(e):
-        # if len(url_input.value) >= 7:
-        #     submit_btn.disabled = False
-        # else:
-        #     submit_btn.disabled = True
         submit_btn.disabled = len(url_input.value) < 7
         page.update()
 
     # Parsing function
     def parse(e):
+        loading_text.visible = True # Show loader
+        page.update()  # Update the page to show the loader
+
         try:
             feedbacks = WBReview(string=url_input.value).parse()
             if feedbacks:
                 result_gpt = ask(feedbacks=feedbacks, api_key=OPENAI_API_KEY)
-                change_text_in_dialog(result_gpt)
+                update_dialog_text(result_gpt)
             else:
-                change_text_in_dialog("No reviews found for this URL. Try another one.")
+                update_dialog_text("No reviews found for this URL. Try another one.")
         except Exception as ex:
             print(f"Error: {ex}")
+        finally:
+            loading_text.visible = False  # Hide loader after processing
+            page.update()  # Update the page again to hide the loader
 
-    # # Update dialog text and open dialog
-    def change_text_in_dialog(text):
+    # Update dialog text and open dialog
+    def update_dialog_text(text):
         alert_dialog.title = ft.Text(text)
         page.open(alert_dialog)
         # page.update()
@@ -56,6 +58,9 @@ def main(page: ft.Page):
     url_input = ft.TextField(label="Paste the product URL or article code", width=700, on_change=check_input)
     submit_btn = ft.FilledButton(text="Start", width=150, disabled=True, on_click=parse)
 
+    # Loader setup
+    loading_text = ft.Text("Loading...", visible=False)
+
     # Alert dialog setup
     alert_dialog = ft.AlertDialog(
         modal=True,
@@ -68,7 +73,9 @@ def main(page: ft.Page):
     # Add components to the page
     page.add(ft.Row([url_input], alignment=ft.MainAxisAlignment.CENTER))
     page.add(ft.Row([submit_btn], alignment=ft.MainAxisAlignment.CENTER))
+    page.add(ft.Row([loading_text], alignment=ft.MainAxisAlignment.CENTER))
 
+    # Final page update
     page.update()
 
 
