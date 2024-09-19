@@ -1,7 +1,7 @@
 # WB Review Parser
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-The project is inspired by the content of YouTube channel [The ParseHub](https://www.youtube.com/@the_parse_hub)
+The project is inspired by the content of the YouTube channel [The ParseHub](https://www.youtube.com/@the_parse_hub)
 
 
 ## Description
@@ -39,6 +39,6 @@ flet run --web --port 8000
 ```
 
 ## What can be improved
-- [ ] Add the product name to the UI, as well as other data such as average rating and number of reviews
+- [x] Add the product name to the UI, as well as other data such as average rating and number of reviews
 - [ ] Compile the entire program into an exe file
 - [ ] Cover the code with tests

@@ -32,10 +32,18 @@ def main(page: ft.Page):
         page.update()  # Update the page to show the loader
 
         try:
-            feedbacks = WBReview(string=url_input.value).parse()
+            feedbacks, average_rating, feedback_count = WBReview(string=url_input.value).parse()
+            item_name = WBReview(string=url_input.value).item_name
             if feedbacks:
                 result_gpt = ask(feedbacks=feedbacks, api_key=OPENAI_API_KEY)
-                update_dialog_text(json_response=result_gpt)
+                additional_info = (
+                    f"Товар: {item_name}\n"
+                    f"Средняя оценка: {average_rating}\n"
+                    f"Количество отзывов: {feedback_count}\n"
+                )
+                update_dialog_text(
+                    json_response=result_gpt, additional_info=additional_info
+                )
             else:
                 update_dialog_text("No reviews found for this URL. Try another one.")
         except Exception as ex:
@@ -47,7 +55,7 @@ def main(page: ft.Page):
             page.update()  # Update the page again to hide the loader
 
     # Update dialog text and open dialog
-    def update_dialog_text(json_response):
+    def update_dialog_text(json_response, additional_info=None):
         # Remove triple quotes if present at the beginning and end
         if json_response.startswith("```") and json_response.endswith("```"):
             json_response = json_response[3:-3].strip()
@@ -79,8 +87,12 @@ def main(page: ft.Page):
             plus_text = "\n".join([f"• {item}" for item in data.get("pros", [])])
             minus_text = "\n".join([f"• {item}" for item in data.get("cons", [])])
 
-            # Set the alert dialog title with formatted text
-            formatted_text = f"Плюсы:\n{plus_text}\n\nМинусы:\n{minus_text}"
+            # Set the alert dialog title with formatted text. Include additional info if provided
+            formatted_text = (
+                f"{additional_info}\nПлюсы:\n{plus_text}\n\nМинусы:\n{minus_text}"
+                if additional_info
+                else f"Плюсы:\n{plus_text}\n\nМинусы:\n{minus_text}"
+            )
             alert_dialog.title = ft.Text(formatted_text)
             page.open(alert_dialog)
         else:

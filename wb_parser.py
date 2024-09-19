@@ -21,6 +21,7 @@ class WBReview:
     def __init__(self, string: str):
         self.sku = self.get_sku(string=string)
         self.root_id = self.get_root_id(sku=self.sku)
+        self.item_name = self.get_item_name(sku=self.sku)
 
     @staticmethod
     def get_sku(string: str) -> str:
@@ -45,8 +46,18 @@ class WBReview:
             raise Exception(f"Can't get root_id from sku: {sku}")
         root_id = response.json()["data"]["products"][0]["root"]
         item_name = response.json()["data"]["products"][0]["name"]
-        print(item_name)
         return root_id
+
+    def get_item_name(self, sku: str):
+        """Get item_name from sku"""
+        response = requests.get(
+            url=f"https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-59202&spp=30&ab_testing=false&nm={sku}",
+            headers=HEADERS,
+        )
+        if response.status_code != 200:
+            raise Exception(f"Can't get item_name from sku: {sku}")
+        item_name = response.json()["data"]["products"][0]["name"]
+        return item_name
 
     def get_review(self) -> json:
         """Get reviews from server 1 or 2"""
@@ -78,17 +89,13 @@ class WBReview:
         # To avoid 400 error due to exceeding maximum context length
         if len(feedbacks) > 80:
             feedbacks = feedbacks[:80]
-        # TO DO
-        feedback_ratings = [
-            feedback.get("productValuation") for feedback in json_feedbacks["feedbacks"]
-        ]
+
+        feedback_ratings = [feedback.get("productValuation") for feedback in json_feedbacks["feedbacks"]]  # TO DO
         average_rating = json_feedbacks["valuation"]
         feedback_count = json_feedbacks["feedbackCount"]
-        valuation_distribution_percents = json_feedbacks["valuationDistributionPercent"]
-        print(
-            f"average_rating: {average_rating}, feedback_count: {feedback_count}, valuation_distribution_percents: {valuation_distribution_percents}"
-        )
-        return feedbacks
+        valuation_distribution_percents = json_feedbacks["valuationDistributionPercent"]  # TO DO
+
+        return feedbacks, average_rating, feedback_count
 
 
 if __name__ == "__main__":

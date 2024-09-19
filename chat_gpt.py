@@ -39,7 +39,6 @@ def ask(feedbacks: list, api_key):
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": content}],
         )
-        print(chat_completion.choices[0].message.content)
         return chat_completion.choices[0].message.content
     except Exception as e:
         print(e)
