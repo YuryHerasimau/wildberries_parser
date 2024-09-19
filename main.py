@@ -3,6 +3,7 @@ from wb_parser import WBReview
 from chat_gpt import ask
 from dotenv import load_dotenv
 import os
+import json
 
 load_dotenv()
 
@@ -34,25 +35,58 @@ def main(page: ft.Page):
             feedbacks = WBReview(string=url_input.value).parse()
             if feedbacks:
                 result_gpt = ask(feedbacks=feedbacks, api_key=OPENAI_API_KEY)
-                update_dialog_text(result_gpt)
+                update_dialog_text(json_response=result_gpt)
             else:
                 update_dialog_text("No reviews found for this URL. Try another one.")
         except Exception as ex:
-            print(f"Error: {ex}")
+            update_dialog_text(f"Something went wrong. Try again later. \n\nError message: {ex}")
         finally:
             loading_text.visible = False  # Hide loader after processing
             page.update()  # Update the page again to hide the loader
 
     # Update dialog text and open dialog
-    def update_dialog_text(text):
-        alert_dialog.title = ft.Text(text)
-        page.open(alert_dialog)
-        # page.update()
+    def update_dialog_text(json_response):
+        print(f"Received JSON response: {json_response}")
 
-    # # Close dialog
+        # Remove triple quotes if present at the beginning and end
+        if json_response.startswith('```') and json_response.endswith('```'):
+            json_response = json_response[3:-3].strip()
+            print(f"json_response[3:-3].strip(): {json_response}")
+
+        # Clean the response if it contains the word "json" at the beginning
+        if json_response.strip().startswith("json"):
+            json_response = json_response[4:].strip()
+            print(f"json_response[4:].strip(): {json_response}")
+
+        if not json_response.strip():  # Check if the response is empty or consists only of whitespace
+            alert_dialog.title = ft.Text("Error: Received empty response.")
+            page.open(alert_dialog)
+            return  # Exit if the response is empty
+
+        try:
+            data = json.loads(json_response) # Load the JSON data
+        except json.JSONDecodeError as ex:
+            alert_dialog.title = ft.Text("Error: Invalid JSON format. Details: " + str(ex))
+            page.open(alert_dialog)
+            return # Exit if there's an error in JSON decoding
+
+        # Proceed only if data is valid
+        if data:
+            # Create formatted text for pros and cons
+            plus_text = "\n".join([f"• {item}" for item in data.get("pros", [])])
+            minus_text = "\n".join([f"• {item}" for item in data.get("cons", [])])
+
+            # Set the alert dialog title with formatted text
+            formatted_text = f"Плюсы:\n{plus_text}\n\nМинусы:\n{minus_text}"
+            alert_dialog.title = ft.Text(formatted_text)
+            page.open(alert_dialog)
+        else:
+            alert_dialog.title = ft.Text("No reviews found for this URL or article code. Try another one.")
+            page.open(alert_dialog)
+
+    # Close dialog
     def handle_close(e):
         page.close(alert_dialog)
-        # page.update()
 
     # Input field and button creation
     url_input = ft.TextField(label="Paste the product URL or article code", width=700, on_change=check_input)
@@ -64,7 +98,7 @@ def main(page: ft.Page):
     # Alert dialog setup
     alert_dialog = ft.AlertDialog(
         modal=True,
-        title=ft.Text("Result"),
+        title=ft.Text("Review Summary"),
         actions=[
             ft.TextButton("OK", on_click=handle_close),
         ]

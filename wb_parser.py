@@ -80,7 +80,7 @@ class WBReview:
         average_rating = json_feedbacks["valuation"]
         feedback_count = json_feedbacks["feedbackCount"]
         valuation_distribution_percents = json_feedbacks["valuationDistributionPercent"]
-
+        print(f"average_rating: {average_rating}, feedback_count: {feedback_count}, valuation_distribution_percents: {valuation_distribution_percents}")
         return feedbacks
 
 if __name__ == "__main__":
