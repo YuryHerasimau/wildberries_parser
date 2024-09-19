@@ -10,8 +10,10 @@ WB Review Parser — analyzer of positive and negative reviews of Wildberries pr
 
 Below is an example:
 
-<img src="Screenshot_1.png" width=600/ alt="main-screen" />
-<img src="Screenshot_2.png" width=600/ alt="result-screen" />
+<div style="display: flex; justify-content: center; align-items: center;">
+    <img src="Screenshot_1.png" width=400 alt="main-screen" />
+    <img src="Screenshot_2.png" width=400 alt="result-screen" />
+</div>
 
 ## Project content
 
