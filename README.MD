@@ -8,6 +8,11 @@ The project is inspired by the content of the YouTube channel [The ParseHub](htt
 
 WB Review Parser — analyzer of positive and negative reviews of Wildberries products by SKU. The SKU is the main product identifier in Wildberries, which is used, for example, in the address of the product card: https://www.wildberries.ru/catalog/64245978/detail.aspx
 
+Below is an example:
+
+<img src="Screenshot_1.png" width=600/ alt="main-screen" />
+<img src="Screenshot_2.png" width=600/ alt="result-screen" />
+
 ## Project content
 
 - parsing reviews from Wildberries
