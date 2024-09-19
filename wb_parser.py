@@ -16,6 +16,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
 }
 
+
 class WBReview:
     def __init__(self, string: str):
         self.sku = self.get_sku(string=string)
@@ -23,7 +24,7 @@ class WBReview:
 
     @staticmethod
     def get_sku(string: str) -> str:
-        """ Get sku from string """
+        """Get sku from string"""
         if "wildberries.ru/catalog/" in string:
             pattern = r"\d{7,15}"
             sku = re.findall(pattern=pattern, string=string)
@@ -34,12 +35,11 @@ class WBReview:
 
         return string
 
-
     def get_root_id(self, sku: str):
-        """ Get root_id from sku """
+        """Get root_id from sku"""
         response = requests.get(
             url=f"https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-59202&spp=30&ab_testing=false&nm={sku}",
-            headers=HEADERS
+            headers=HEADERS,
         )
         if response.status_code != 200:
             raise Exception(f"Can't get root_id from sku: {sku}")
@@ -48,9 +48,8 @@ class WBReview:
         print(item_name)
         return root_id
 
-
     def get_review(self) -> json:
-        """ Get reviews from server 1 or 2 """
+        """Get reviews from server 1 or 2"""
         try:
             response = requests.get(
                 url=f"https://feedbacks1.wb.ru/feedbacks/v1/{self.root_id}",
@@ -71,17 +70,26 @@ class WBReview:
     def parse(self):
         json_feedbacks = self.get_review()
         # Added sku filter to ("Этот вариант товара")
-        feedbacks = [feedback.get("text") for feedback in json_feedbacks["feedbacks"] if str(feedback.get("nmId")) == self.sku]
+        feedbacks = [
+            feedback.get("text")
+            for feedback in json_feedbacks["feedbacks"]
+            if str(feedback.get("nmId")) == self.sku
+        ]
         # To avoid 400 error due to exceeding maximum context length
         if len(feedbacks) > 80:
             feedbacks = feedbacks[:80]
         # TO DO
-        feedback_ratings = [feedback.get("productValuation") for feedback in json_feedbacks["feedbacks"]]
+        feedback_ratings = [
+            feedback.get("productValuation") for feedback in json_feedbacks["feedbacks"]
+        ]
         average_rating = json_feedbacks["valuation"]
         feedback_count = json_feedbacks["feedbackCount"]
         valuation_distribution_percents = json_feedbacks["valuationDistributionPercent"]
-        print(f"average_rating: {average_rating}, feedback_count: {feedback_count}, valuation_distribution_percents: {valuation_distribution_percents}")
+        print(
+            f"average_rating: {average_rating}, feedback_count: {feedback_count}, valuation_distribution_percents: {valuation_distribution_percents}"
+        )
         return feedbacks
+
 
 if __name__ == "__main__":
     feedbacks = WBReview("https://www.wildberries.ru/catalog/190597734/detail.aspx").parse()

@@ -1,6 +1,7 @@
 # WB Review Parser
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-WB Review Parser is ...
+The project is inspired by the content of YouTube channel [The ParseHub](https://www.youtube.com/@the_parse_hub)
 
 
 ## Description
@@ -28,9 +29,13 @@ pip install -r requirements.txt
 3. Сreate a `.env` file in the root directory with your OPENAI_API_KEY
 
 ### Executing program
-Run the script:
+Run as a desktop app:
 ```
-flet run [main.py]
+flet run
+```
+Run as web app:
+```
+flet run --web --port 8000
 ```
 
 ## What can be improved

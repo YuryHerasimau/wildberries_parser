@@ -28,7 +28,7 @@ def main(page: ft.Page):
 
     # Parsing function
     def parse(e):
-        loading_text.visible = True # Show loader
+        loading_text.visible = True  # Show loader
         page.update()  # Update the page to show the loader
 
         try:
@@ -39,17 +39,17 @@ def main(page: ft.Page):
             else:
                 update_dialog_text("No reviews found for this URL. Try another one.")
         except Exception as ex:
-            update_dialog_text(f"Something went wrong. Try again later. \n\nError message: {ex}")
+            update_dialog_text(
+                f"Something went wrong. Try again later. \n\nError message: {ex}"
+            )
         finally:
             loading_text.visible = False  # Hide loader after processing
             page.update()  # Update the page again to hide the loader
 
     # Update dialog text and open dialog
     def update_dialog_text(json_response):
-        print(f"Received JSON response: {json_response}")
-
         # Remove triple quotes if present at the beginning and end
-        if json_response.startswith('```') and json_response.endswith('```'):
+        if json_response.startswith("```") and json_response.endswith("```"):
             json_response = json_response[3:-3].strip()
             print(f"json_response[3:-3].strip(): {json_response}")
 
@@ -58,17 +58,20 @@ def main(page: ft.Page):
             json_response = json_response[4:].strip()
             print(f"json_response[4:].strip(): {json_response}")
 
-        if not json_response.strip():  # Check if the response is empty or consists only of whitespace
+        # Check if the response is empty or consists only of whitespace
+        if not json_response.strip():
             alert_dialog.title = ft.Text("Error: Received empty response.")
             page.open(alert_dialog)
             return  # Exit if the response is empty
 
         try:
-            data = json.loads(json_response) # Load the JSON data
+            data = json.loads(json_response)  # Load the JSON data
         except json.JSONDecodeError as ex:
-            alert_dialog.title = ft.Text("Error: Invalid JSON format. Details: " + str(ex))
+            alert_dialog.title = ft.Text(
+                "Error: Invalid JSON format. Details: " + str(ex)
+            )
             page.open(alert_dialog)
-            return # Exit if there's an error in JSON decoding
+            return  # Exit if there's an error in JSON decoding
 
         # Proceed only if data is valid
         if data:
@@ -81,7 +84,9 @@ def main(page: ft.Page):
             alert_dialog.title = ft.Text(formatted_text)
             page.open(alert_dialog)
         else:
-            alert_dialog.title = ft.Text("No reviews found for this URL or article code. Try another one.")
+            alert_dialog.title = ft.Text(
+                "No reviews found for this URL or article code. Try another one."
+            )
             page.open(alert_dialog)
 
     # Close dialog
@@ -89,7 +94,9 @@ def main(page: ft.Page):
         page.close(alert_dialog)
 
     # Input field and button creation
-    url_input = ft.TextField(label="Paste the product URL or article code", width=700, on_change=check_input)
+    url_input = ft.TextField(
+        label="Paste the product URL or article code", width=700, on_change=check_input
+    )
     submit_btn = ft.FilledButton(text="Start", width=150, disabled=True, on_click=parse)
 
     # Loader setup
@@ -101,9 +108,9 @@ def main(page: ft.Page):
         title=ft.Text("Review Summary"),
         actions=[
             ft.TextButton("OK", on_click=handle_close),
-        ]
+        ],
     )
-    
+
     # Add components to the page
     page.add(ft.Row([url_input], alignment=ft.MainAxisAlignment.CENTER))
     page.add(ft.Row([submit_btn], alignment=ft.MainAxisAlignment.CENTER))
