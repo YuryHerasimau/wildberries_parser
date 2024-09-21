@@ -8,3 +8,8 @@ __pycache__/
 .venv
 env/
 venv/
+
+# Compilation
+main.build/
+main.dist/
+main.onefile-build/

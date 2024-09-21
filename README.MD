@@ -44,8 +44,12 @@ Run as web app:
 ```
 flet run --web --port 8000
 ```
+Compile a whole program
+```
+python -m nuitka --follow-imports --standalone --jobs=4 --onefile --windows-console-mode=disable --include-package-data=flet main.py
+```
 
 ## What can be improved
 - [x] Add the product name to the UI, as well as other data such as average rating and number of reviews
-- [ ] Compile the entire program into an exe file
+- [x] Compile the entire program into an exe file
 - [ ] Cover the code with tests

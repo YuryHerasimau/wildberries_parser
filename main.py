@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 import json
 
-load_dotenv()
+load_dotenv(dotenv_path=".env")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
@@ -107,7 +107,7 @@ def main(page: ft.Page):
 
     # Input field and button creation
     url_input = ft.TextField(
-        label="Paste the product URL or article code", width=700, on_change=check_input
+        label="Paste the product URL or article code (SKU)", width=700, on_change=check_input
     )
     submit_btn = ft.FilledButton(text="Start", width=150, disabled=True, on_click=parse)
 

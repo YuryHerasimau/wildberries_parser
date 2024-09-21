@@ -5,7 +5,7 @@ from chat_gpt import ask
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=".env")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
@@ -94,7 +94,6 @@ class WBReview:
         average_rating = json_feedbacks["valuation"]
         feedback_count = json_feedbacks["feedbackCount"]
         valuation_distribution_percents = json_feedbacks["valuationDistributionPercent"]  # TO DO
-
         return feedbacks, average_rating, feedback_count
 
 
