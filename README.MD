@@ -36,7 +36,7 @@ pip install -r requirements.txt
 3. Сreate a `.env` file in the root directory with your OPENAI_API_KEY
 
 ### Usage
-1. **Executing the Program**
+1. `Executing the Program`
 To run the application as a desktop app, use the following command:
 ```
 flet run src/main.py
@@ -45,7 +45,7 @@ To run the application as a web app, use the following command:
 ```
 flet run src/main.py --web --port 8000
 ```
-2. **Compilation**
+2. `Compilation`
 To compile the entire program into an executable file, run the following command:
 ```
 python -m nuitka --follow-imports --standalone --jobs=4 --onefile --windows-console-mode=disable --include-package-data=flet main.py
