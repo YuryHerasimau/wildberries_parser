@@ -1,7 +1,7 @@
 import requests
 import re
 import json
-from gpt_api import ask
+from .gpt_api import ask
 import os
 from dotenv import load_dotenv
 
