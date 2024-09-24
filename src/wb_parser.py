@@ -1,7 +1,7 @@
 import requests
 import re
 import json
-from chat_gpt import ask
+from gpt_api import ask
 import os
 from dotenv import load_dotenv
 
@@ -42,10 +42,9 @@ class WBReview:
             url=f"https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-59202&spp=30&ab_testing=false&nm={sku}",
             headers=HEADERS,
         )
-        if response.status_code != 200:
+        if response.status_code != 200 or not response.json()["data"]["products"]:
             raise Exception(f"Can't get root_id from sku: {sku}")
         root_id = response.json()["data"]["products"][0]["root"]
-        item_name = response.json()["data"]["products"][0]["name"]
         return root_id
 
     def get_item_name(self, sku: str):
@@ -98,8 +97,7 @@ class WBReview:
 
 
 if __name__ == "__main__":
-    feedbacks = WBReview("https://www.wildberries.ru/catalog/190597734/detail.aspx").parse()
+    # "https://www.wildberries.ru/catalog/190597734/detail.aspx"
+    feedbacks = WBReview(input("Enter the product URL or SKU code: ")).parse()
     answer = ask(feedbacks=feedbacks, api_key=OPENAI_API_KEY)
     print(answer)
-    # print(WBReview("190597734").sku)
-    # print(WBReview("https://www.wildberries.ru/catalog/1/detail.aspx").sku)

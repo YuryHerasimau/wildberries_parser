@@ -1,6 +1,6 @@
 import flet as ft
 from wb_parser import WBReview
-from chat_gpt import ask
+from gpt_api import ask
 from dotenv import load_dotenv
 import os
 import json
@@ -59,12 +59,10 @@ def main(page: ft.Page):
         # Remove triple quotes if present at the beginning and end
         if json_response.startswith("```") and json_response.endswith("```"):
             json_response = json_response[3:-3].strip()
-            print(f"json_response[3:-3].strip(): {json_response}")
 
         # Clean the response if it contains the word "json" at the beginning
         if json_response.strip().startswith("json"):
             json_response = json_response[4:].strip()
-            print(f"json_response[4:].strip(): {json_response}")
 
         # Check if the response is empty or consists only of whitespace
         if not json_response.strip():
@@ -107,7 +105,7 @@ def main(page: ft.Page):
 
     # Input field and button creation
     url_input = ft.TextField(
-        label="Paste the product URL or article code (SKU)", width=700, on_change=check_input
+        label="Enter the product URL or SKU code", width=700, on_change=check_input
     )
     submit_btn = ft.FilledButton(text="Start", width=150, disabled=True, on_click=parse)
 

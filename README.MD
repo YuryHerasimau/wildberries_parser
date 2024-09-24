@@ -11,8 +11,8 @@ WB Review Parser — analyzer of positive and negative reviews of Wildberries pr
 Below is an example:
 
 <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="Screenshot_1.png" width=400 alt="main-screen" />
-    <img src="Screenshot_2.png" width=400 alt="result-screen" />
+    <img src="assets/Screenshot_1.png" width=400 alt="main-screen" />
+    <img src="assets/Screenshot_2.png" width=400 alt="result-screen" />
 </div>
 
 ## Project content
@@ -38,11 +38,11 @@ pip install -r requirements.txt
 ### Executing program
 Run as a desktop app:
 ```
-flet run
+flet run src/main.py
 ```
 Run as web app:
 ```
-flet run --web --port 8000
+flet run src/main.py --web --port 8000
 ```
 Compile a whole program
 ```
